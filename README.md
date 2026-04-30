@@ -27,7 +27,7 @@ The discount tier thresholds (0–9.99 % auto-approve, 10–24.99 % Sales Manage
 | Sandbox refresh | Records survive a sandbox refresh | Records are wiped on full sandbox refresh |
 | Protection | Can be marked `protected` in a managed package | No equivalent concept |
 
-**Trade-off accepted:** Custom Metadata records cannot be modified through standard DML (they require the Metadata API or a deployment). For an admin who wants to adjust tier thresholds in production without a deployment, this is friction. In a production system we would document a lightweight change process or expose a custom admin screen backed by the Metadata API.
+**Trade-off accepted:** Custom Metadata records can be updated directly in Salesforce Setup UI without any deployment — admins go to Setup → Custom Metadata Types → Discount Approval Tier → Manage Records and edit thresholds inline. This makes tier adjustments genuinely admin-friendly. The real limitation is that changes take effect immediately in production with no built-in audit trail or approval process on the configuration change itself. A non-technical admin could inadvertently break tier boundaries with no record of who changed what and when. In a regulated environment I would wrap configuration changes in a formal change management process, or migrate to a Custom Object where Field History Tracking provides a full audit trail of configuration changes.
 
 ---
 

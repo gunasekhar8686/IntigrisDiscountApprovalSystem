@@ -114,21 +114,23 @@ No custom MCP servers or slash commands were configured for this project. Claude
 
 ### 03 — Concrete Examples
 
-**Example 1 — Bulk-safe email notification design**
+**Example 1 — HTML email notification implementation**
 
-Initial approach sent one `Messaging.SingleEmailMessage` per request inside a loop (a governor limit violation waiting to happen on bulk inserts). The prompt was:
+I designed the notification architecture: one bulk `Messaging.sendEmail` call after collecting all recipient addresses across four pre-loop SOQL queries, with `allOrNothing = false` so a single bad address does not roll back the transaction. Once the design was clear, I directed Claude to implement the HTML email body — branded header, structured table (request number, opportunity, discount %, approver level, reason), and a deep-link CTA button pointing to the Opportunity record. Writing clean HTML email markup with inline styles is pure boilerplate. Claude produced a complete, tested template in under a minute; doing it by hand would have taken significantly longer with no added value.
 
-> *"We're sending one email per request inside a for loop. What's the correct bulk-safe pattern for Salesforce email?"*
+The prompt was:
 
-Claude identified the anti-pattern immediately, restructured the code to collect all addresses first across four queries outside the loop, build the full `List<Messaging.SingleEmailMessage>` in memory, and then call `Messaging.sendEmail(emails, false)` once. The `allOrNothing = false` flag was specifically recommended so a single bad email address does not roll back the entire transaction.
+> *"Implement the HTML email body for the notification. Blue header (#0070d2), table with alternating row shading, a 'Review & Approve Request' button linking to the Opportunity, and a footer saying 'Kind regards, Sales Team'. Use inline styles only — no external CSS."*
 
-**Example 2 — FOR UPDATE concurrency guard**
+The output was used directly with minor wording tweaks.
 
-The duplicate-Pending check needed to prevent two simultaneous inserts from both passing the guard. The prompt was:
+**Example 2 — FOR UPDATE + WITH USER_MODE incompatibility**
 
-> *"Two sales reps click Submit at the same millisecond for the same Opportunity. How do I prevent both requests from being created?"*
+I knew `FOR UPDATE` was the right tool for the concurrency guard — locking existing Pending rows before the duplicate check so two simultaneous inserts cannot both pass. What I used Claude to validate was a specific platform constraint: `WITH USER_MODE` (enforcing FLS and sharing in SOQL) is **incompatible with `FOR UPDATE`** in Salesforce — combining them throws a runtime error. The prompt was:
 
-Claude proposed `FOR UPDATE` in the SOQL query on existing Pending records, explaining that it acquires a row-level lock so the second transaction blocks until the first commits. It also flagged that `WITH USER_MODE` is incompatible with `FOR UPDATE` and must be omitted — a subtle Salesforce-specific constraint that is easy to miss.
+> *"I want to use both WITH USER_MODE and FOR UPDATE on this query. Is that valid?"*
+
+Claude confirmed the incompatibility and explained why — `FOR UPDATE` operates at the database lock level before the sharing engine runs, making the combination unsupported. This saved a runtime failure in the org and is the kind of edge case worth explicitly documenting in code comments.
 
 ---
 

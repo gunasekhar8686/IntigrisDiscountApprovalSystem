@@ -27,7 +27,7 @@ The discount tier thresholds (0–9.99 % auto-approve, 10–24.99 % Sales Manage
 | Sandbox refresh | Records survive a sandbox refresh | Records are wiped on full sandbox refresh |
 | Protection | Can be marked `protected` in a managed package | No equivalent concept |
 
-**Trade-off accepted:** Custom Metadata records can be updated directly in Salesforce Setup UI without any deployment — admins go to Setup → Custom Metadata Types → Discount Approval Tier → Manage Records and edit thresholds inline. This makes tier adjustments genuinely admin-friendly. The real limitation is that changes take effect immediately in production with no built-in audit trail or approval process on the configuration change itself. A non-technical admin could inadvertently break tier boundaries with no record of who changed what and when. In a regulated environment I would wrap configuration changes in a formal change management process, or migrate to a Custom Object where Field History Tracking provides a full audit trail of configuration changes.
+Custom Metadata records can be updated directly in Salesforce Setup UI without any deployment — admins go to Setup → Custom Metadata Types → Discount Approval Tier → Manage Records and edit thresholds inline. Every record carries standard **Created By**, **Created Date**, **Last Modified By**, and **Last Modified Date** fields, so basic traceability of who changed a tier and when is available out of the box. This makes Custom Metadata the clear choice: deployment portability, sandbox survival, and admin-friendly configuration — with no meaningful downside for this use case.
 
 ---
 
@@ -138,7 +138,7 @@ Claude confirmed the incompatibility and explained why — `FOR UPDATE` operates
 
 **Custom Metadata vs Custom Object for tiers**
 
-Claude's first suggestion was a Custom Object with standard CRUD access so admins could edit thresholds directly in a list view. Both options allow admins to update records via the UI without a deployment — so that was not the deciding factor. The override was based on two things Custom Object cannot match: CMDT records travel with the package during sandbox-to-production deployments (no separate data migration step), and they survive a full sandbox refresh without being wiped. The real trade-off accepted was the lack of a built-in audit trail on configuration changes — a Custom Object with Field History Tracking would tell you who changed a tier threshold and when, which CMDT does not. That risk was accepted for this scope and documented in Section 1.
+Claude's first suggestion was a Custom Object with standard CRUD access so admins could edit thresholds directly in a list view. Both options allow UI edits without a deployment — so that was not the deciding factor. The override was based on two things Custom Object cannot match: CMDT records travel with the package during sandbox-to-production deployments with no separate data migration step, and they survive a full sandbox refresh without being wiped. Custom Metadata also carries standard Created By and Last Modified By fields, so basic traceability is available. For this use case, Custom Metadata wins on every dimension that matters.
 
 **Flow vs Apex for email notifications**
 

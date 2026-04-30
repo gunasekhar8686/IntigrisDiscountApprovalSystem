@@ -1,4 +1,4 @@
-public without sharing class DiscountRequestHandler {
+public with sharing class DiscountRequestHandler {
 
     public static Boolean isProcessingApproval = false;
 

@@ -1,5 +1,5 @@
 @isTest
-public class DiscountRequestResourceTest {
+public class DiscountRequestAPITest {
 
     @testSetup
     static void setup() {
@@ -35,7 +35,7 @@ public class DiscountRequestResourceTest {
         setRequest('{"opportunityId":"' + opp.Id + '","discount":15,"reason":"Test"}');
 
         Test.startTest();
-        DiscountRequestResource.createDiscountRequest();
+        DiscountRequestAPI.createDiscountRequest();
         Test.stopTest();
 
         System.assertEquals(201, RestContext.response.statusCode);
@@ -56,7 +56,7 @@ public class DiscountRequestResourceTest {
         setRequest('{"opportunityId":"' + opp.Id + '","discount":5,"reason":"Small deal"}');
 
         Test.startTest();
-        DiscountRequestResource.createDiscountRequest();
+        DiscountRequestAPI.createDiscountRequest();
         Test.stopTest();
 
         System.assertEquals(201, RestContext.response.statusCode);
@@ -73,7 +73,7 @@ public class DiscountRequestResourceTest {
         setRequest('{"discount":15,"reason":"No opp"}');
 
         Test.startTest();
-        DiscountRequestResource.createDiscountRequest();
+        DiscountRequestAPI.createDiscountRequest();
         Test.stopTest();
 
         System.assertEquals(400, RestContext.response.statusCode);
@@ -94,7 +94,7 @@ public class DiscountRequestResourceTest {
         setRequest('{"opportunityId":"' + opp.Id + '","discount":150}');
 
         Test.startTest();
-        DiscountRequestResource.createDiscountRequest();
+        DiscountRequestAPI.createDiscountRequest();
         Test.stopTest();
 
         System.assertEquals(400, RestContext.response.statusCode);
@@ -111,7 +111,7 @@ public class DiscountRequestResourceTest {
         setRequest('{"opportunityId":"' + opp.Id + '","discount":15,"reason":"Too late"}');
 
         Test.startTest();
-        DiscountRequestResource.createDiscountRequest();
+        DiscountRequestAPI.createDiscountRequest();
         Test.stopTest();
 
         System.assertEquals(400, RestContext.response.statusCode);

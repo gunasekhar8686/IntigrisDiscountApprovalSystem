@@ -2,14 +2,16 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <version>62.0</version>
 
-    <!-- ── Apex Classes (4 production + 1 test) ───────────────────────────── -->
+    <!-- ── Apex Classes ──────────────────────────────────────────────────── -->
     <types>
         <name>ApexClass</name>
         <members>DiscountTierSelector</members>
         <members>DiscountRequestService</members>
         <members>DiscountRequestHandler</members>
         <members>DiscountRequestController</members>
+        <members>DiscountRequestAPI</members>
         <members>DiscountRequestTest</members>
+        <members>DiscountRequestAPITest</members>
     </types>
 
     <!-- ── Apex Trigger ───────────────────────────────────────────────────── -->

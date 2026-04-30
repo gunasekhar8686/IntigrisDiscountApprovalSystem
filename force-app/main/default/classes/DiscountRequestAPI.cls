@@ -17,7 +17,7 @@
  *   500  { "message" }   — unexpected error
  */
 @RestResource(urlMapping='/discount-requests/v1')
-global with sharing class DiscountRequestResource {
+global with sharing class DiscountRequestAPI {
 
     global class CreateRequestBody {
         global Id      opportunityId;

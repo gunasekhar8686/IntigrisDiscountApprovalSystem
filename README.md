@@ -213,7 +213,7 @@ sf project deploy start --target-org MyOrg --manifest manifest/package.xml
 **4. Run Apex tests**
 
 ```bash
-sf apex run test --target-org MyOrg --class-names DiscountRequestTest,DiscountRequestResourceTest --result-format human --wait 10
+sf apex run test --target-org MyOrg --class-names DiscountRequestTest,DiscountRequestAPITest --result-format human --wait 10
 ```
 
 **5. Assign Permission Sets**
@@ -329,9 +329,9 @@ IntigrisDiscountApprovalSystem/
 │   │   ├── DiscountRequestService.cls        # Core business logic (before/after insert, before/after update)
 │   │   ├── DiscountRequestHandler.cls        # Thin trigger handler; owns isProcessingApproval flag
 │   │   ├── DiscountRequestController.cls     # @AuraEnabled methods for the LWC
-│   │   ├── DiscountRequestResource.cls       # @RestResource POST /discount-requests/v1
+│   │   ├── DiscountRequestAPI.cls       # @RestResource POST /discount-requests/v1
 │   │   ├── DiscountRequestTest.cls           # 20 Apex tests (trigger + controller)
-│   │   └── DiscountRequestResourceTest.cls   # 5 Apex tests (REST endpoint)
+│   │   └── DiscountRequestAPITest.cls   # 5 Apex tests (REST endpoint)
 │   ├── triggers/
 │   │   └── DiscountRequestTrigger.trigger
 │   ├── lwc/

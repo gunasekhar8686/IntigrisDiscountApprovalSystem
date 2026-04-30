@@ -245,13 +245,37 @@ Any Opportunity → gear icon → **Edit Page** → drag **Discount Request Pane
 
 ### Stretch Goal — Apex REST API
 
-An external system can create discount requests via:
+An `@RestResource` endpoint is exposed at `/services/apexrest/discount-requests/v1` so external systems (ERP, CPQ tools, integrations) can create Discount Requests programmatically without a Salesforce UI. The same trigger logic runs on insert — tier routing, auto-approve, duplicate guard, and email notifications all fire exactly as they do from the LWC.
+
+**Endpoint:** `POST /services/apexrest/discount-requests/v1`
+
+**Request body:**
+```json
+{
+  "opportunityId": "<Opportunity Id>",
+  "discount": 15,
+  "reason": "Strategic deal — competitive pricing."
+}
+```
+
+**Response codes:**
+- `201` — request created; returns `requestId`, `requestName`, and `status` (Pending or Auto-Approved)
+- `400` — validation failure (missing fields, discount out of range, closed opportunity, duplicate pending)
+- `500` — unexpected server error
+
+**Input validation enforced by the endpoint:**
+- `opportunityId` is required
+- `discount` must be a number between 0 and 100
+
+All business validation (closed opportunity, duplicate pending) is enforced by the existing trigger and surfaces as a `400` with a clear message.
+
+**Test with curl:**
 
 ```bash
 # Get an access token
 sf org display --target-org MyOrg
 
-# Create a Pending discount request
+# Create a discount request
 curl -s -w "\n%{http_code}" -X POST \
   'https://<your-org-domain>/services/apexrest/discount-requests/v1' \
   -H 'Authorization: Bearer <access_token>' \

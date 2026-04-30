@@ -138,7 +138,7 @@ Claude confirmed the incompatibility and explained why — `FOR UPDATE` operates
 
 **Custom Metadata vs Custom Object for tiers**
 
-Claude's first suggestion was a Custom Object with standard CRUD access so admins could edit thresholds directly in a list view without a deployment. After discussing the requirement that the system must move intact from sandbox to production without a data migration step, the decision shifted to Custom Metadata. The admin-friction trade-off was accepted consciously and documented above.
+Claude's first suggestion was a Custom Object with standard CRUD access so admins could edit thresholds directly in a list view. Both options allow admins to update records via the UI without a deployment — so that was not the deciding factor. The override was based on two things Custom Object cannot match: CMDT records travel with the package during sandbox-to-production deployments (no separate data migration step), and they survive a full sandbox refresh without being wiped. The real trade-off accepted was the lack of a built-in audit trail on configuration changes — a Custom Object with Field History Tracking would tell you who changed a tier threshold and when, which CMDT does not. That risk was accepted for this scope and documented in Section 1.
 
 **Flow vs Apex for email notifications**
 

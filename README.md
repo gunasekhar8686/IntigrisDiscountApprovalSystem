@@ -177,9 +177,7 @@ Rather than patching both issues in Flow — which has no bulk-collection patter
 | Scenario | Reason deferred |
 |----------|----------------|
 | **Multi-currency** | Discount values are percentages, not currency amounts. `Opportunity.Discount__c` is a Number(5,2) field. Multi-currency has no bearing on the tier thresholds or workflow. |
-| **Opportunity sharing with approvers** | If Opportunity OWD is Private, queue members may not see the parent record. The fix is Apex Managed Sharing on Discount Request insert. Deferred because the target org uses Public Read/Write OWD for Opportunities. |
 | **Auto-escalation** | Pending requests older than N days should auto-escalate to the next tier. Deferred to stretch goal — implementation would be a Scheduled Apex job querying overdue Pending requests. |
-| **Email deliverability in scratch orgs** | Salesforce disables outbound email in scratch orgs by default. The notification system executes without error but no email is received. Enable deliverability in Setup → Email → Deliverability for manual testing. |
 
 ---
 

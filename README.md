@@ -171,7 +171,6 @@ Rather than patching both issues in Flow — which has no bulk-collection patter
 | **Concurrent duplicate Pending requests** | `FOR UPDATE` SOQL on existing Pending records acquires a row-level lock before the duplicate check. Two simultaneous inserts cannot both pass the guard. |
 | **Stacked discounts** | On each new approval, prior Approved/Auto-Approved requests have `Is_Active__c` set to `false` and `Opportunity.Discount__c` is overwritten with the latest `Final_Discount__c`. The newest approval always wins. |
 | **Unauthorised approval attempt** | `FeatureManagement.checkPermission('Approve_Discount_Request')` is enforced server-side in the trigger, not just in the LWC. A user without the permission cannot approve via LWC, API, Workbench, or Data Loader. |
-| **Auto-approve tier** | Requests for discounts below 10 % are stamped `Auto-Approved` in the before-insert trigger and never enter a Pending state. The Opportunity `Discount__c` is updated immediately in after-insert without requiring any approver action. |
 
 ### Deferred
 

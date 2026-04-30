@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Discount_Request__c</fullName>
+    <description>The Discount Request this audit record belongs to.</description>
+    <externalId>false</externalId>
+    <label>Discount Request</label>
+    <referenceTo>Discount_Request__c</referenceTo>
+    <relationshipLabel>Audit Trail</relationshipLabel>
+    <relationshipName>Audit_Trail</relationshipName>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,209 @@
+<template>
+    <lightning-card title="Discount Requests" icon-name="standard:opportunity">
+
+        <!-- Spinner overlay -->
+        <template lwc:if={isLoading}>
+            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+        </template>
+
+        <div class="slds-card__body slds-card__body_inner">
+
+            <!-- ── Closed opportunity notice ──────────────────────────────── -->
+            <template lwc:if={isOpportunityClosed}>
+                <p class="slds-text-body_small slds-text-color_weak slds-m-bottom_small">
+                    This Opportunity is closed. New discount requests cannot be submitted.
+                </p>
+            </template>
+
+            <!-- ── New Request button + helper text ───────────────────────── -->
+            <template lwc:if={canSubmitRequest}>
+                <div class="slds-m-bottom_medium">
+                    <lightning-button
+                        label="New Discount Request"
+                        variant="brand"
+                        icon-name="utility:add"
+                        disabled={hasPendingRequest}
+                        onclick={handleNewRequest}>
+                    </lightning-button>
+                    <template lwc:if={hasPendingRequest}>
+                        <p class="slds-m-top_xx-small slds-text-body_small slds-text-color_weak">
+                            A Pending request already exists. Resolve it before submitting a new one.
+                        </p>
+                    </template>
+                </div>
+            </template>
+
+            <!-- ── Inline new request form ─────────────────────────────────── -->
+            <template lwc:if={showForm}>
+                <div class="slds-box slds-theme_shade slds-m-bottom_medium">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small">New Discount Request</h3>
+                    <lightning-input
+                        type="number"
+                        label="Requested Discount (%)"
+                        value={newDiscount}
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        required
+                        onchange={handleDiscountChange}>
+                    </lightning-input>
+                    <div class="slds-m-top_small">
+                        <lightning-textarea
+                            label="Reason"
+                            value={newReason}
+                            max-length="32768"
+                            onchange={handleReasonChange}>
+                        </lightning-textarea>
+                    </div>
+                    <div class="slds-m-top_small">
+                        <lightning-button
+                            label="Submit"
+                            variant="brand"
+                            onclick={handleSubmit}
+                            class="slds-m-right_x-small">
+                        </lightning-button>
+                        <lightning-button
+                            label="Cancel"
+                            onclick={handleCancel}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ── Wire error ─────────────────────────────────────────────── -->
+            <template lwc:if={wireError}>
+                <div class="slds-notify slds-notify_alert slds-theme_error slds-m-bottom_small" role="alert">
+                    <span class="slds-assistive-text">Error</span>
+                    <h2>{wireError}</h2>
+                </div>
+            </template>
+
+            <!-- ── Empty state ────────────────────────────────────────────── -->
+            <template lwc:elseif={showEmptyState}>
+                <div class="slds-align_absolute-center slds-p-around_large">
+                    <div class="slds-text-align_center">
+                        <p class="slds-text-heading_small slds-text-color_weak">
+                            No discount requests found for this Opportunity.
+                        </p>
+                        <p class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                            Click &ldquo;New Discount Request&rdquo; to get started.
+                        </p>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ── Request list ───────────────────────────────────────────── -->
+            <template lwc:if={hasRequests}>
+                <template for:each={enrichedRequests} for:item="req">
+                    <div key={req.Id} class="slds-box slds-box_x-small slds-m-bottom_x-small request-card">
+
+                        <!-- Row: main fields -->
+                        <div class="slds-grid slds-wrap slds-gutters_x-small slds-m-bottom_xx-small">
+
+                            <div class="slds-col slds-size_1-of-6">
+                                <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Request #</p>
+                                <p class="slds-text-body_regular">{req.Name}</p>
+                            </div>
+
+                            <div class="slds-col slds-size_1-of-6">
+                                <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Discount %</p>
+                                <p class="slds-text-body_regular">{req.Requested_Discount__c}%</p>
+                            </div>
+
+                            <div class="slds-col slds-size_1-of-6">
+                                <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Status</p>
+                                <span class={req.badgeClass}>{req.Status__c}</span>
+                            </div>
+
+                            <div class="slds-col slds-size_1-of-6">
+                                <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Approver Level</p>
+                                <p class="slds-text-body_regular">{req.Required_Approver_Level__c}</p>
+                            </div>
+
+                            <div class="slds-col slds-size_1-of-6">
+                                <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Approver</p>
+                                <p class="slds-text-body_regular">{req.approverName}</p>
+                            </div>
+
+                            <div class="slds-col slds-size_1-of-6">
+                                <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Decision Date</p>
+                                <lightning-formatted-date-time
+                                    value={req.Decision_Timestamp__c}
+                                    year="numeric"
+                                    month="short"
+                                    day="2-digit"
+                                    hour="2-digit"
+                                    minute="2-digit">
+                                </lightning-formatted-date-time>
+                            </div>
+                        </div>
+
+                        <!-- Reason + Rejection Comments row -->
+                        <div class="slds-grid slds-gutters_small slds-m-top_small slds-wrap">
+                            <div class="slds-col slds-size_1-of-2">
+                                <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Reason / Justification</p>
+                                <p class="slds-text-body_regular">{req.reasonDisplay}</p>
+                            </div>
+                            <template lwc:if={req.Approver_Comments__c}>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <div style="border-left:3px solid #c23934;padding-left:8px;">
+                                        <p class="slds-text-body_small slds-text-color_weak slds-text-title_caps" style="font-weight:700">Rejection Comments</p>
+                                        <p class="slds-text-body_regular slds-text-color_error">{req.Approver_Comments__c}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Approve / Reject buttons — Pending rows only, approvers only -->
+                        <template lwc:if={req.isPending}>
+                            <template lwc:if={hasApproverPermission}>
+                                <div class="slds-m-top_xx-small slds-align_absolute-center">
+                                    <lightning-button
+                                        label="Approve"
+                                        variant="success"
+                                        data-id={req.Id}
+                                        onclick={handleApprove}
+                                        class="slds-m-right_x-small">
+                                    </lightning-button>
+                                    <lightning-button
+                                        label="Reject"
+                                        variant="destructive-text"
+                                        data-id={req.Id}
+                                        onclick={handleRejectOpen}>
+                                    </lightning-button>
+                                </div>
+                            </template>
+                        </template>
+
+                        <!-- Inline reject comment form -->
+                        <template lwc:if={req.isRejecting}>
+                            <div class="slds-box slds-theme_shade slds-m-top_small">
+                                <lightning-textarea
+                                    label="Rejection Comments (required)"
+                                    value={rejectComment}
+                                    max-length="32768"
+                                    onchange={handleRejectCommentChange}>
+                                </lightning-textarea>
+                                <div class="slds-m-top_small">
+                                    <lightning-button
+                                        label="Submit Rejection"
+                                        variant="destructive"
+                                        data-id={req.Id}
+                                        onclick={handleRejectSubmit}
+                                        class="slds-m-right_x-small">
+                                    </lightning-button>
+                                    <lightning-button
+                                        label="Cancel"
+                                        onclick={handleRejectCancel}>
+                                    </lightning-button>
+                                </div>
+                            </div>
+                        </template>
+
+                    </div>
+                </template>
+            </template>
+
+        </div>
+    </lightning-card>
+</template>

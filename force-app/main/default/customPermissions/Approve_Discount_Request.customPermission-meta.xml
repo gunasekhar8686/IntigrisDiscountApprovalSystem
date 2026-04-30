@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Grants user ability to approve or reject discount requests. Checked in Apex via FeatureManagement.checkPermission before allowing status changes to Approved or Rejected.</description>
+    <label>Approve Discount Request</label>
+</CustomPermission>

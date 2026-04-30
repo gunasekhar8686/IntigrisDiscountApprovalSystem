@@ -1,0 +1,6 @@
+# Salesforce DX — local org auth & cache (never commit)
+.sfdx/
+
+# Node
+node_modules/
+.localdevserver/

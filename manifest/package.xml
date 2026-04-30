@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <version>62.0</version>
+
+    <!-- ── Apex Classes (4 production + 1 test) ───────────────────────────── -->
+    <types>
+        <name>ApexClass</name>
+        <members>DiscountTierSelector</members>
+        <members>DiscountRequestService</members>
+        <members>DiscountRequestHandler</members>
+        <members>DiscountRequestController</members>
+        <members>DiscountRequestTest</members>
+    </types>
+
+    <!-- ── Apex Trigger ───────────────────────────────────────────────────── -->
+    <types>
+        <name>ApexTrigger</name>
+        <members>DiscountRequestTrigger</members>
+    </types>
+
+    <!-- ── LWC ────────────────────────────────────────────────────────────── -->
+    <types>
+        <name>LightningComponentBundle</name>
+        <members>discountRequestPanel</members>
+    </types>
+
+    <!-- ── Custom Objects (includes Custom Metadata Type) ─────────────────── -->
+    <types>
+        <name>CustomObject</name>
+        <members>Discount_Request__c</members>
+        <members>Discount_Request_Audit__c</members>
+        <members>Discount_Approval_Tier__mdt</members>
+    </types>
+
+    <!-- ── Custom Fields ──────────────────────────────────────────────────── -->
+    <types>
+        <name>CustomField</name>
+
+        <!-- Discount_Request__c fields -->
+        <members>Discount_Request__c.Opportunity__c</members>
+        <members>Discount_Request__c.Requested_Discount__c</members>
+        <members>Discount_Request__c.Status__c</members>
+        <members>Discount_Request__c.Required_Approver_Level__c</members>
+        <members>Discount_Request__c.Final_Discount__c</members>
+        <members>Discount_Request__c.Approver__c</members>
+        <members>Discount_Request__c.Decision_Timestamp__c</members>
+        <members>Discount_Request__c.Approver_Comments__c</members>
+        <members>Discount_Request__c.Reason__c</members>
+        <members>Discount_Request__c.Is_Active__c</members>
+
+        <!-- Discount_Request_Audit__c fields -->
+        <members>Discount_Request_Audit__c.Discount_Request__c</members>
+        <members>Discount_Request_Audit__c.Action__c</members>
+        <members>Discount_Request_Audit__c.Performed_By__c</members>
+        <members>Discount_Request_Audit__c.Comments__c</members>
+        <members>Discount_Request_Audit__c.Timestamp__c</members>
+
+        <!-- Discount_Approval_Tier__mdt fields -->
+        <members>Discount_Approval_Tier__mdt.Min_Discount__c</members>
+        <members>Discount_Approval_Tier__mdt.Max_Discount__c</members>
+        <members>Discount_Approval_Tier__mdt.Approver_Level__c</members>
+        <members>Discount_Approval_Tier__mdt.Auto_Approve__c</members>
+        <members>Discount_Approval_Tier__mdt.Queue_DeveloperName__c</members>
+
+        <!-- Opportunity custom field -->
+        <members>Opportunity.Discount__c</members>
+    </types>
+
+    <!-- ── Custom Metadata Records ────────────────────────────────────────── -->
+    <types>
+        <name>CustomMetadata</name>
+        <members>Discount_Approval_Tier__mdt.Auto_Approve</members>
+        <members>Discount_Approval_Tier__mdt.Sales_Manager</members>
+        <members>Discount_Approval_Tier__mdt.Director</members>
+        <members>Discount_Approval_Tier__mdt.CFO</members>
+    </types>
+
+    <!-- ── Custom Permission ───────────────────────────────────────────────── -->
+    <types>
+        <name>CustomPermission</name>
+        <members>Approve_Discount_Request</members>
+        <members>Submit_Discount_Request</members>
+    </types>
+
+    <!-- ── Permission Sets ────────────────────────────────────────────────── -->
+    <types>
+        <name>PermissionSet</name>
+        <members>Discount_Requester</members>
+        <members>Discount_Approver</members>
+    </types>
+
+    <!-- ── Queues ──────────────────────────────────────────────────────────── -->
+    <types>
+        <name>Queue</name>
+        <members>Sales_Manager_Approvals</members>
+        <members>Director_Approvals</members>
+        <members>CFO_Approvals</members>
+    </types>
+
+    <!-- ── Report Types ──────────────────────────────────────────────────── -->
+    <types>
+        <name>ReportType</name>
+        <members>Discount_Requests_with_Opportunities</members>
+    </types>
+
+    <!-- ── Tabs ──────────────────────────────────────────────────────────── -->
+    <types>
+        <name>CustomTab</name>
+        <members>Discount_Request_Audit__c</members>
+    </types>
+
+    <!-- ── Flow ───────────────────────────────────────────────────────────── -->
+    <types>
+        <name>Flow</name>
+        <members>Discount_Request_Approval_Notification</members>
+    </types>
+
+</Package>

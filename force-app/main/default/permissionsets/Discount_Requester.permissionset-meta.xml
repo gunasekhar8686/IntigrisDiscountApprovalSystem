@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Assigned to sales reps who raise discount requests. Grants Read and Create on Discount_Request__c and Read-only on the audit trail.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Discount Requester</label>
+
+    <!-- Custom Permission -->
+    <customPermissions>
+        <enabled>true</enabled>
+        <name>Submit_Discount_Request</name>
+    </customPermissions>
+
+    <!-- Apex Class Access -->
+    <classAccesses>
+        <apexClass>DiscountRequestController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+
+    <!-- Object Permissions -->
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Discount_Request__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Discount_Request_Audit__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+
+    <!-- Field Permissions — Discount_Request__c (Read only) -->
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request__c.Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request__c.Required_Approver_Level__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request__c.Final_Discount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request__c.Approver__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request__c.Decision_Timestamp__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request__c.Approver_Comments__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request__c.Is_Active__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Discount_Request__c.Reason__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+
+    <!-- Opportunity custom field -->
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Opportunity.Discount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+
+    <!-- Field Permissions — Discount_Request_Audit__c (Read only) -->
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request_Audit__c.Action__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request_Audit__c.Comments__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request_Audit__c.Discount_Request__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request_Audit__c.Performed_By__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Discount_Request_Audit__c.Timestamp__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+
+    <!-- Tab Visibility -->
+    <tabSettings>
+        <tab>Discount_Request_Audit__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+</PermissionSet>

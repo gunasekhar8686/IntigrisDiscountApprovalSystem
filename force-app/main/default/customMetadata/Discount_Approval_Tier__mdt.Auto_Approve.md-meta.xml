@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Auto Approve</label>
+    <protected>false</protected>
+    <values>
+        <field>Min_Discount__c</field>
+        <value xsi:type="xsd:double">0</value>
+    </values>
+    <values>
+        <field>Max_Discount__c</field>
+        <value xsi:type="xsd:double">9.99</value>
+    </values>
+    <values>
+        <field>Approver_Level__c</field>
+        <value xsi:nil="true"/>
+    </values>
+    <values>
+        <field>Auto_Approve__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>Queue_DeveloperName__c</field>
+        <value xsi:nil="true"/>
+    </values>
+</CustomMetadata>

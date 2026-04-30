@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Performed_By__c</fullName>
+    <description>The User who performed the action. Populated from UserInfo.getUserId() in the trigger context.</description>
+    <externalId>false</externalId>
+    <label>Performed By</label>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>Discount Request Audit Records</relationshipLabel>
+    <relationshipName>Discount_Request_Audit_Records</relationshipName>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

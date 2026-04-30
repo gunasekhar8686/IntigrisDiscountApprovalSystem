@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <description>Sends an email to every queue member whenever a Discount Request Status becomes Pending.</description>
+    <environments>Default</environments>
+    <interviewLabel>Discount Request Approval Notification {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Discount Request Approval Notification</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <status>Active</status>
+
+    <!-- ── Variables ──────────────────────────────────────────────────────── -->
+
+    <variables>
+        <name>queueMembers</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>GroupMember</objectType>
+    </variables>
+
+    <variables>
+        <name>currentUser</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>User</objectType>
+    </variables>
+
+    <!-- ── Text Templates ─────────────────────────────────────────────────── -->
+
+    <textTemplates>
+        <name>emailSubjectTemplate</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>New Discount Approval Required — {!$Record.Opportunity__r.Name}</text>
+    </textTemplates>
+
+    <textTemplates>
+        <name>emailBodyTemplate</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>A {!$Record.Requested_Discount__c}% discount request has been submitted and requires your approval.
+
+Request Number  : {!$Record.Name}
+Opportunity     : {!$Record.Opportunity__r.Name}
+Requested Discount: {!$Record.Requested_Discount__c}%
+Approver Level  : {!$Record.Required_Approver_Level__c}
+
+Please log in to Salesforce to review and action this request.</text>
+    </textTemplates>
+
+    <!-- ── Action Calls (grouped) ─────────────────────────────────────────── -->
+
+    <actionCalls>
+        <name>Send_Member_Email</name>
+        <label>Send Member Email</label>
+        <locationX>176</locationX>
+        <locationY>878</locationY>
+        <connector>
+            <targetReference>Loop_Members</targetReference>
+        </connector>
+        <faultConnector>
+            <targetReference>Loop_Members</targetReference>
+        </faultConnector>
+        <actionName>emailSimple</actionName>
+        <actionType>emailSimple</actionType>
+        <inputParameters>
+            <name>emailAddresses</name>
+            <value>
+                <elementReference>currentUser.Email</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailSubject</name>
+            <value>
+                <elementReference>emailSubjectTemplate</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>emailBody</name>
+            <value>
+                <elementReference>emailBodyTemplate</elementReference>
+            </value>
+        </inputParameters>
+    </actionCalls>
+
+    <!-- ── Decisions (grouped) ────────────────────────────────────────────── -->
+
+    <decisions>
+        <name>Check_Has_Members</name>
+        <label>Has Members?</label>
+        <locationX>176</locationX>
+        <locationY>398</locationY>
+        <defaultConnectorLabel>No Members — Skip</defaultConnectorLabel>
+        <rules>
+            <name>Has_Members</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>queueMembers</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Loop_Members</targetReference>
+            </connector>
+            <label>Yes — Loop Members</label>
+        </rules>
+    </decisions>
+
+    <decisions>
+        <name>Check_User_Found</name>
+        <label>User Found?</label>
+        <locationX>176</locationX>
+        <locationY>758</locationY>
+        <defaultConnectorLabel>Not a User — Skip</defaultConnectorLabel>
+        <defaultConnector>
+            <targetReference>Loop_Members</targetReference>
+        </defaultConnector>
+        <rules>
+            <name>User_Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>currentUser</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Send_Member_Email</targetReference>
+            </connector>
+            <label>Yes — Send Email</label>
+        </rules>
+    </decisions>
+
+    <!-- ── Loop (grouped) ─────────────────────────────────────────────────── -->
+
+    <loops>
+        <name>Loop_Members</name>
+        <label>Loop Members</label>
+        <locationX>176</locationX>
+        <locationY>518</locationY>
+        <collectionReference>queueMembers</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Get_Member_User</targetReference>
+        </nextValueConnector>
+    </loops>
+
+    <!-- ── Record Lookups (grouped) ───────────────────────────────────────── -->
+
+    <recordLookups>
+        <name>Get_Queue_Members</name>
+        <label>Get Queue Members</label>
+        <locationX>176</locationX>
+        <locationY>278</locationY>
+        <connector>
+            <targetReference>Check_Has_Members</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>GroupId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.OwnerId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>GroupMember</object>
+        <outputReference>queueMembers</outputReference>
+        <sortField>Id</sortField>
+        <sortOrder>Asc</sortOrder>
+    </recordLookups>
+
+    <recordLookups>
+        <name>Get_Member_User</name>
+        <label>Get Member User</label>
+        <locationX>176</locationX>
+        <locationY>638</locationY>
+        <connector>
+            <targetReference>Check_User_Found</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Loop_Members.UserOrGroupId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>User</object>
+        <outputReference>currentUser</outputReference>
+    </recordLookups>
+
+    <!-- ── Start ──────────────────────────────────────────────────────────── -->
+
+    <start>
+        <locationX>56</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Queue_Members</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Pending</stringValue>
+            </value>
+        </filters>
+        <object>Discount_Request__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+
+</Flow>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Defines discount percentage tiers and their required approval levels. Used by DiscountTierSelector to route requests to the correct approver queue.</description>
+    <label>Discount Approval Tier</label>
+    <pluralLabel>Discount Approval Tiers</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

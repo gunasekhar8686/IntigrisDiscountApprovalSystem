@@ -72,9 +72,19 @@ Each tier maps to a Salesforce Queue (`Sales_Manager_Approvals`, `Director_Appro
 | Dimension | Field History Tracking | Audit Object |
 |-----------|----------------------|--------------|
 | Retention | 18 months standard | Permanent unless deleted |
+| Field type support | Cannot track Long Text Area fields | Any field type, including long text |
+| Fields per object | Max 20 tracked fields per object | Unlimited; structured as rows |
 | Custom data | Field + old/new value only | Free-form `Comments__c`, `Action__c`, `Performed_By__c` |
-| Queryable | Via `FieldHistory` child relationship | Direct SOQL |
-| Reportable | Limited | Full Report Builder support |
+| Queryable | Via `FieldHistory` child relationship | Direct SOQL on the object |
+| Reportable | Limited; not in all report types | Full Report Builder support |
+| Packagable | Configuration only; no metadata file | Full metadata + data portability |
+
+**Key technical constraint:** Two of the most important fields in this system — `Reason__c` (the rep's justification) and `Approver_Comments__c` (the rejection reason) — are Long Text Area fields. Salesforce Field History Tracking explicitly does not support Long Text Area, Rich Text Area, or Multi-Select Picklist fields. This alone rules it out: capturing a rejection without the rejection comment is not a meaningful audit trail.
+
+**Additional constraints that reinforced the decision:**
+- Field History is capped at **20 tracked fields per object**. As the object grows (e.g. adding escalation fields), this limit becomes a design constraint.
+- Field History retention is **18 months by default**. Finance and compliance teams typically require longer retention; the audit object can be archived or backed up independently.
+- Field History records cannot carry a **free-form comment** alongside the change. The audit object stores `Comments__c`, `Action__c`, and `Performed_By__c` together in a single row, making each audit entry self-contained and human-readable.
 
 **Trade-off accepted:** The audit object consumes data storage. At high volume this cost is real; for the current scope it is negligible.
 

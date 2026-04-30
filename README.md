@@ -142,7 +142,13 @@ Claude's first suggestion was a Custom Object with standard CRUD access so admin
 
 **Flow vs Apex for email notifications**
 
-Claude initially generated a Record-Triggered Flow to send approval notification emails. During testing the flow caused the entire record-save transaction to roll back whenever `emailSimple` failed (missing fault connector). Rather than patching the flow, the decision was made to replace it entirely with the Apex `sendQueueNotifications` method — giving full control over error handling, HTML email body, and bulk behaviour. The flow was deactivated and kept in the repo as a reference.
+Claude initially generated a Record-Triggered Flow to send approval notification emails. Two problems emerged during review and testing:
+
+1. **SOQL inside a loop** — the Flow looped over every `GroupMember` record and issued a separate Get Records element inside the loop to look up each member's email address. In a queue with 10 members that is 10 SOQL queries; in a bulk insert of 200 requests across multiple queues this becomes a governor limit violation. Flow has no native way to collect all member IDs first and resolve emails in a single query.
+
+2. **Missing fault connector** — without a fault path on the `emailSimple` action, any email failure (invalid address, deliverability disabled) caused the entire record-save transaction to roll back. The Discount Request was never created.
+
+Rather than patching both issues in Flow — which has no bulk-collection pattern and requires manually wiring fault connectors on every action — the decision was made to replace it entirely with the Apex `sendQueueNotifications` method. Apex resolves all member emails in a single `SELECT Id, Email FROM User WHERE Id IN :memberUserIds` query outside any loop, builds the full `List<Messaging.SingleEmailMessage>` in memory, and calls `Messaging.sendEmail(emails, false)` once. The `allOrNothing = false` flag means a single bad address is skipped without affecting the rest. The flow was deactivated and kept in the repo as a reference of the original approach.
 
 ---
 

@@ -313,7 +313,6 @@ Jest unit tests for `discountRequestPanel` covering: empty state rendering, badg
 | **Apex Managed Sharing** | Write sharing records on `Discount_Request__c` insert to grant queue members read access to the parent Opportunity when OWD is Private. |
 | **Platform Events** | Publish a `Discount_Decision__e` Platform Event on approval/rejection so external subscribers (ERP, Slack) receive real-time notifications without polling. |
 | **Duplicate check UX** | Show the existing Pending request's record link in the LWC message so the rep can navigate directly to it instead of receiving only a toast error. |
-| **Governor limit assertions in tests** | Add `Limits.getQueries()` assertions to the bulk test so any future regression that adds a SOQL inside a loop is caught immediately by CI. |
 | **Connected App + JWT auth for REST API** | Replace session-token-based curl demos with a proper OAuth 2.0 JWT Bearer flow for server-to-server external system integration. |
 
 ---

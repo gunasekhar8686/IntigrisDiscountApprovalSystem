@@ -4,6 +4,45 @@ A Salesforce metadata project that implements a configurable, multi-tier discoun
 
 ---
 
+## System Flow
+
+```mermaid
+flowchart TD
+    classDef trigger  fill:#0070d2,stroke:#005fb2,color:#fff,rx:6
+    classDef decision fill:#f4b400,stroke:#c9960c,color:#1a1a1a
+    classDef success  fill:#2e844a,stroke:#236838,color:#fff
+    classDef rejected fill:#c23934,stroke:#a61a14,color:#fff
+    classDef pending  fill:#ff8800,stroke:#cc6d00,color:#fff
+    classDef audit    fill:#6b5fc7,stroke:#5246a8,color:#fff
+    classDef entry    fill:#f4f6f9,stroke:#dddbda,color:#1a1a1a
+
+    A([🧑‍💼 Sales Rep submits\nDiscount Request\nvia LWC or REST API]):::entry
+
+    A --> B{Before Insert\nValidation}:::decision
+    B -->|❌ Closed Opp\nor Duplicate Pending| ERR1([🚫 Error shown in UI\nDML rolled back]):::rejected
+    B -->|✅ Passes| C{Tier Lookup\nDiscount_Approval_Tier__mdt}:::decision
+
+    C -->|0 – 9.99%| AUTO([✅ Auto-Approved\nNo human action needed]):::success
+    C -->|10 – 24.99%| SM([⏳ Pending\nSales Manager Queue]):::pending
+    C -->|25 – 39.99%| DIR([⏳ Pending\nDirector Queue]):::pending
+    C -->|40 – 100%| CFO([⏳ Pending\nCFO Queue]):::pending
+
+    SM --> EMAIL[📧 HTML Email sent\nto every queue member]:::trigger
+    DIR --> EMAIL
+    CFO --> EMAIL
+
+    EMAIL --> ACT{Approver opens\nOpportunity record}:::decision
+    ACT -->|❌ No permission\nor wrong tier queue| ERR2([🚫 Blocked\naddError in beforeUpdate]):::rejected
+    ACT -->|✅ Approve| APP([✅ Approved\nOpportunity.Discount__c updated\nApprover + timestamp stamped]):::success
+    ACT -->|✅ Reject\ncomments required| REJ([❌ Rejected\nComments stored\nApprover + timestamp stamped]):::rejected
+
+    AUTO --> AUD[📋 Audit Record written\nAction · Performed By · Timestamp · Comments]:::audit
+    APP  --> AUD
+    REJ  --> AUD
+```
+
+---
+
 ## Table of Contents
 
 1. [Architecture Decisions & Trade-offs](#1-architecture-decisions--trade-offs)

@@ -349,9 +349,15 @@ public without sharing class DiscountRequestService {
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * @description Enforces that Approver_Comments__c is populated whenever
-     *              Status__c transitions to Rejected. Fires as a field-level
-     *              validation before the record is saved.
+     * @description Validates all Approved/Rejected status transitions before
+     *              the record is saved. Three checks run in order per record:
+     *                1. Running user must hold the Approve_Discount_Request permission.
+     *                2. Running user must be a member of the request's owner queue
+     *                   (tier-level enforcement — prevents a Sales Manager from
+     *                   approving a CFO-tier request).
+     *                3. Rejection comments must be provided when rejecting.
+     *
+     *              All SOQL is executed before the loop — bulk-safe for 200+ records.
      *
      * @param newList Trigger.new from the before-update context.
      * @param oldMap  Trigger.oldMap from the before-update context.
@@ -360,50 +366,6 @@ public without sharing class DiscountRequestService {
         List<Discount_Request__c> newList,
         Map<Id, Discount_Request__c> oldMap
     ) {
-        for (Discount_Request__c req : newList) {
-            Discount_Request__c old = oldMap.get(req.Id);
-
-            // Only validate on a fresh Pending → Rejected transition
-            if (old.Status__c != req.Status__c &&
-                req.Status__c == 'Rejected' &&
-                String.isBlank(req.Approver_Comments__c)) {
-
-                req.addError('Comments required for rejection.');
-            }
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // AFTER UPDATE — Approvals + Audit
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * @description Responds to Approved and Rejected status transitions:
-     *                - Stamps Approver__c and Decision_Timestamp__c via a
-     *                  secondary update (gated by isProcessingApproval to
-     *                  prevent recursion).
-     *                - Updates Opportunity.Discount__c when Approved.
-     *                - Writes an audit record for every status change.
-     *
-     *              Only processes records whose Status__c actually changed to
-     *              Approved or Rejected — all other updates are ignored.
-     *
-     * @param newList Trigger.new from the after-update context.
-     * @param oldMap  Trigger.oldMap from the after-update context.
-     */
-    public static void handleAfterUpdate(
-        List<Discount_Request__c> newList,
-        Map<Id, Discount_Request__c> oldMap
-    ) {
-
-        List<Discount_Request__c>       updates      = new List<Discount_Request__c>();
-        Map<Id, Opportunity>            oppsToUpdate = new Map<Id, Opportunity>();
-        List<Discount_Request_Audit__c> audits       = new List<Discount_Request_Audit__c>();
-
-        DateTime now = System.now();
-
-        // Check permission once before the loop — use addError (not throw) so the
-        // message surfaces cleanly via getDmlMessage(0) in the controller
         Boolean hasPermission = FeatureManagement.checkPermission('Approve_Discount_Request');
 
         // Collect queue IDs from records transitioning to Approved/Rejected.
@@ -423,12 +385,69 @@ public without sharing class DiscountRequestService {
         if (!queueIds.isEmpty()) {
             for (GroupMember gm : [
                 SELECT GroupId FROM GroupMember
-                WHERE  GroupId        IN :queueIds
-                AND    UserOrGroupId  =  :UserInfo.getUserId()
+                WHERE  GroupId       IN :queueIds
+                AND    UserOrGroupId =  :UserInfo.getUserId()
             ]) {
                 memberOfQueues.add(gm.GroupId);
             }
         }
+
+        for (Discount_Request__c req : newList) {
+            Discount_Request__c old = oldMap.get(req.Id);
+
+            // Only validate on Approved/Rejected status transitions
+            if (old.Status__c == req.Status__c) continue;
+            if (req.Status__c != 'Approved' && req.Status__c != 'Rejected') continue;
+
+            if (!hasPermission) {
+                req.addError('No permission to approve/reject.');
+                continue;
+            }
+
+            // Tier-level enforcement: approver must be a member of the request's
+            // owner queue — prevents cross-tier approvals
+            if (req.OwnerId != null && String.valueOf(req.OwnerId).startsWith('00G')
+                    && !memberOfQueues.contains(req.OwnerId)) {
+                req.addError('You are not authorised to approve this tier of request.');
+                continue;
+            }
+
+            // Rejection comments required
+            if (req.Status__c == 'Rejected' && String.isBlank(req.Approver_Comments__c)) {
+                req.addError('Comments required for rejection.');
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AFTER UPDATE — Approvals + Audit
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * @description Responds to Approved and Rejected status transitions:
+     *                - Stamps Approver__c and Decision_Timestamp__c via a
+     *                  secondary update (gated by isProcessingApproval to
+     *                  prevent recursion).
+     *                - Updates Opportunity.Discount__c when Approved.
+     *                - Writes an audit record for every status change.
+     *
+     *              Validation (permission + tier check + rejection comments)
+     *              is handled in handleBeforeUpdate — this method is pure
+     *              side-effects only.
+     *
+     * @param newList Trigger.new from the after-update context.
+     * @param oldMap  Trigger.oldMap from the after-update context.
+     */
+    public static void handleAfterUpdate(
+        List<Discount_Request__c> newList,
+        Map<Id, Discount_Request__c> oldMap
+    ) {
+
+        List<Discount_Request__c>       updates      = new List<Discount_Request__c>();
+        Map<Id, Opportunity>            oppsToUpdate = new Map<Id, Opportunity>();
+        List<Discount_Request_Audit__c> audits       = new List<Discount_Request_Audit__c>();
+
+        DateTime now = System.now();
 
         for (Discount_Request__c req : newList) {
 
@@ -439,20 +458,6 @@ public without sharing class DiscountRequestService {
 
             // Only process terminal approval states
             if (req.Status__c != 'Approved' && req.Status__c != 'Rejected') continue;
-
-            if (!hasPermission) {
-                req.addError('No permission to approve/reject.');
-                continue;
-            }
-
-            // Tier-level enforcement: the approver must be a member of the queue
-            // that owns the request. Prevents a Sales Manager from approving a
-            // CFO-tier request even if they hold the Approve_Discount_Request permission.
-            if (req.OwnerId != null && String.valueOf(req.OwnerId).startsWith('00G')
-                    && !memberOfQueues.contains(req.OwnerId)) {
-                req.addError('You are not authorised to approve this tier of request.');
-                continue;
-            }
 
             // Stamp the approver and timestamp in a follow-up update.
             // Cannot set these fields in before-update because UserInfo is needed at runtime.

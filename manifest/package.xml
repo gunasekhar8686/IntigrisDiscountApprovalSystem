@@ -99,6 +99,12 @@
         <members>CFO_Approvals</members>
     </types>
 
+    <!-- ── Page Layouts ──────────────────────────────────────────────────── -->
+    <types>
+        <name>Layout</name>
+        <members>Discount_Request__c-Discount Request Layout</members>
+    </types>
+
     <!-- ── Report Types ──────────────────────────────────────────────────── -->
     <types>
         <name>ReportType</name>

@@ -16,12 +16,13 @@ public without sharing class DiscountTierSelector {
      */
     private static List<Discount_Approval_Tier__mdt> getAllTiers() {
         if (cachedTiers == null) {
+            // WITH USER_MODE is not supported on Custom Metadata Type queries —
+            // CMDT is setup data, accessible to all users regardless of profile
             cachedTiers = [
                 SELECT DeveloperName, Label,
                        Min_Discount__c, Max_Discount__c,
                        Approver_Level__c, Auto_Approve__c, Queue_DeveloperName__c
                 FROM   Discount_Approval_Tier__mdt
-                WITH   USER_MODE
                 ORDER  BY Min_Discount__c ASC
             ];
         }

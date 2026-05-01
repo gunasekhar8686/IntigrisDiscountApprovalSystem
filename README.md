@@ -309,6 +309,7 @@ Jest unit tests for `discountRequestPanel` covering: empty state rendering, badg
 
 | Area | Change |
 |------|--------|
+| **Submitter notifications** | Currently only the approver queue is notified. The rep who submitted the request receives no email when it is Approved or Rejected. Adding an after-update notification to `CreatedById` would close the feedback loop — the rep would know immediately when their discount was actioned and whether they can proceed with the deal. |
 | **Apex Managed Sharing** | Write sharing records on `Discount_Request__c` insert to grant queue members read access to the parent Opportunity when OWD is Private. |
 | **Platform Events** | Publish a `Discount_Decision__e` Platform Event on approval/rejection so external subscribers (ERP, Slack) receive real-time notifications without polling. |
 | **Duplicate check UX** | Show the existing Pending request's record link in the LWC message so the rep can navigate directly to it instead of receiving only a toast error. |

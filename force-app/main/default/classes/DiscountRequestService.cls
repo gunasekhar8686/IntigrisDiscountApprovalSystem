@@ -406,6 +406,30 @@ public without sharing class DiscountRequestService {
         // message surfaces cleanly via getDmlMessage(0) in the controller
         Boolean hasPermission = FeatureManagement.checkPermission('Approve_Discount_Request');
 
+        // Collect queue IDs from records transitioning to Approved/Rejected.
+        // OwnerId starting with '00G' identifies a Queue (vs a User '005').
+        Set<Id> queueIds = new Set<Id>();
+        for (Discount_Request__c req : newList) {
+            Discount_Request__c old = oldMap.get(req.Id);
+            if (old.Status__c == req.Status__c) continue;
+            if (req.Status__c != 'Approved' && req.Status__c != 'Rejected') continue;
+            if (req.OwnerId != null && String.valueOf(req.OwnerId).startsWith('00G')) {
+                queueIds.add(req.OwnerId);
+            }
+        }
+
+        // Single bulk query — which of those queues does the running user belong to?
+        Set<Id> memberOfQueues = new Set<Id>();
+        if (!queueIds.isEmpty()) {
+            for (GroupMember gm : [
+                SELECT GroupId FROM GroupMember
+                WHERE  GroupId        IN :queueIds
+                AND    UserOrGroupId  =  :UserInfo.getUserId()
+            ]) {
+                memberOfQueues.add(gm.GroupId);
+            }
+        }
+
         for (Discount_Request__c req : newList) {
 
             Discount_Request__c old = oldMap.get(req.Id);
@@ -418,6 +442,15 @@ public without sharing class DiscountRequestService {
 
             if (!hasPermission) {
                 req.addError('No permission to approve/reject.');
+                continue;
+            }
+
+            // Tier-level enforcement: the approver must be a member of the queue
+            // that owns the request. Prevents a Sales Manager from approving a
+            // CFO-tier request even if they hold the Approve_Discount_Request permission.
+            if (req.OwnerId != null && String.valueOf(req.OwnerId).startsWith('00G')
+                    && !memberOfQueues.contains(req.OwnerId)) {
+                req.addError('You are not authorised to approve this tier of request.');
                 continue;
             }
 

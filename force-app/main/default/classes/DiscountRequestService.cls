@@ -402,6 +402,10 @@ public without sharing class DiscountRequestService {
 
         DateTime now = System.now();
 
+        // Check permission once before the loop — use addError (not throw) so the
+        // message surfaces cleanly via getDmlMessage(0) in the controller
+        Boolean hasPermission = FeatureManagement.checkPermission('Approve_Discount_Request');
+
         for (Discount_Request__c req : newList) {
 
             Discount_Request__c old = oldMap.get(req.Id);
@@ -411,6 +415,11 @@ public without sharing class DiscountRequestService {
 
             // Only process terminal approval states
             if (req.Status__c != 'Approved' && req.Status__c != 'Rejected') continue;
+
+            if (!hasPermission) {
+                req.addError('No permission to approve/reject.');
+                continue;
+            }
 
             // Stamp the approver and timestamp in a follow-up update.
             // Cannot set these fields in before-update because UserInfo is needed at runtime.
@@ -441,14 +450,13 @@ public without sharing class DiscountRequestService {
         }
 
         if (!updates.isEmpty()) {
-            // Verify the running user holds the Custom Permission before committing
-            if (!FeatureManagement.checkPermission('Approve_Discount_Request')) {
-                throw new AuraHandledException('No permission to approve/reject.');
-            }
-            // Set flag to prevent the after-update trigger from re-processing this internal DML
+            // try-finally ensures the flag is always cleared, even if the inner DML throws
             DiscountRequestHandler.isProcessingApproval = true;
-            update updates;
-            DiscountRequestHandler.isProcessingApproval = false;
+            try {
+                update updates;
+            } finally {
+                DiscountRequestHandler.isProcessingApproval = false;
+            }
         }
 
         if (!oppsToUpdate.isEmpty()) {

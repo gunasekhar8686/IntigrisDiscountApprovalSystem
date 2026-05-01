@@ -95,6 +95,8 @@ public with sharing class DiscountRequestController {
             update as user req;
         } catch (AuraHandledException e) {
             throw e;
+        } catch (DmlException e) {
+            throw new AuraHandledException(e.getDmlMessage(0));
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
@@ -129,6 +131,8 @@ public with sharing class DiscountRequestController {
             update as user req;
         } catch (AuraHandledException e) {
             throw e;
+        } catch (DmlException e) {
+            throw new AuraHandledException(e.getDmlMessage(0));
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }

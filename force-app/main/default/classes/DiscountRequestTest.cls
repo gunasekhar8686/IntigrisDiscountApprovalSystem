@@ -460,8 +460,7 @@ public class DiscountRequestTest {
                 update toApprove;
                 System.assert(false, 'Expected exception for unauthorised approval attempt');
             } catch (DmlException e) {
-                // AuraHandledException thrown from a trigger wraps as DmlException
-                // with CANNOT_INSERT_UPDATE_ACTIVATE_ENTITY — message is 'Script-thrown exception'
+                // addError in the trigger surfaces as DmlException — message is 'No permission to approve/reject.'
                 exceptionThrown = true;
             }
         }
@@ -644,8 +643,8 @@ public class DiscountRequestTest {
                 DiscountRequestController.rejectRequest(req.Id, '   ');
                 System.assert(false, 'Expected AuraHandledException for blank comments');
             } catch (AuraHandledException e) {
-                // AuraHandledException message surfaces as 'Script-thrown exception' in test context
-                System.assert(true, 'AuraHandledException correctly thrown for blank comments');
+                System.assert(e.getMessage() != null,
+                    'AuraHandledException must be thrown for blank comments');
             }
         }
         Test.stopTest();
